@@ -1,0 +1,1 @@
+export type THandlerPermission = "access" | "add" | "update" | "changeStatus";
