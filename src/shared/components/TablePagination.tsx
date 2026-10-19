@@ -110,7 +110,7 @@ const TablePagination: FC<TablePaginationProps> = ({
                                 <button
                                     type="button"
                                     className="page-link d-flex align-items-center justify-content-center"
-                                    onClick={handlePrevious}
+                                    onMouseDown={handlePrevious}
                                     disabled={currentPage === 1}
                                     aria-label="Página anterior"
                                 >
@@ -132,7 +132,7 @@ const TablePagination: FC<TablePaginationProps> = ({
                                     <button
                                         type="button"
                                         className="page-link"
-                                        onClick={() =>
+                                        onMouseDown={() =>
                                             onPageChange(page)
                                         }
                                     >
@@ -150,7 +150,7 @@ const TablePagination: FC<TablePaginationProps> = ({
                                 <button
                                     type="button"
                                     className="page-link d-flex align-items-center justify-content-center"
-                                    onClick={handleNext}
+                                    onMouseDown={handleNext}
                                     disabled={
                                         currentPage === totalPages
                                     }

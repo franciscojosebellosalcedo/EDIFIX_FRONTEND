@@ -2,24 +2,25 @@ import clsx from "clsx";
 import { useFormik } from "formik";
 import { useEffect, useState } from "react";
 import { Form, InputGroup } from "react-bootstrap";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 import * as Yup from "yup";
 import { setComponent } from "../../../../feactures/layout/layoutSlice";
 import { useAppDispatch } from "../../../../hooks/use.dispatch";
-import TitlePage from "../../../../shared/components/TitlePage";
-import { getCodeError, haveErrorForm } from "../../../../shared/errors/handler.error";
-import { getMessage } from "../../../../shared/utils/message.util";
-import type { TRol, TRolPermission, TSaveRol } from "../../types/rol.type";
-import { rolApi } from "../api/rol.api";
-import ErrorInput from "../../../../shared/errors/components/ErrorInput";
-import Separator from "../../../../shared/components/Separator";
-import RolPermission from "./RolPermission";
-import type { THandlerPermission } from "../../../../shared/types/permission.type";
-import type { TOptionMenu } from "../../../../layout/menu.type";
-import { useNavigate } from "react-router-dom";
-import { NAVIGATION } from "../../../../shared/navigation/navigation.tokens";
 import { useKeyBoardEvent } from "../../../../hooks/use.keyboard.event";
+import type { TOptionMenu } from "../../../../layout/menu.type";
+import Loading from "../../../../shared/components/Loading";
+import Separator from "../../../../shared/components/Separator";
+import TitlePage from "../../../../shared/components/TitlePage";
+import ErrorInput from "../../../../shared/errors/components/ErrorInput";
+import { getCodeError, haveErrorForm } from "../../../../shared/errors/handler.error";
 import { ERROR_MESSAGE } from "../../../../shared/messages/error.message";
-import { toast } from "react-toastify";
+import { NAVIGATION } from "../../../../shared/navigation/navigation.tokens";
+import type { THandlerPermission } from "../../../../shared/types/permission.type";
+import { getMessage } from "../../../../shared/utils/message.util";
+import type { TDataRol, TRol, TRolPermission, TSaveRol } from "../../types/rol.type";
+import { rolApi } from "../api/rol.api";
+import RolPermission from "./RolPermission";
 
 const initialValues: TRol = {
     rol_Nombre: "",
@@ -30,11 +31,11 @@ const validationSchema = Yup.object().shape({
 
     rol_Nombre: Yup.string()
         .required("Se requiere nombre")
-        .trim(),
+        .transform((value) => value?.replace(/\s/g, "")),
 
     rol_Descripcion: Yup.string()
         .optional()
-        .trim(),
+        .transform((value) => value?.replace(/\s/g, "")),
 
 });
 
@@ -44,11 +45,15 @@ const FormRol = () => {
 
     const [loading, setLoading] = useState(false);
 
+    const [loadingGetRol, setLoadingGetRol] = useState(false);
+
     const [permissions, setPermissions] = useState<TRolPermission[]>([]);
 
     const navigate = useNavigate();
 
-    // const params = useParams();
+    const params = useParams();
+
+    const [found, setFound] = useState<TDataRol | null>(null);
 
     const create = async (values: TSaveRol) => {
         try {
@@ -65,12 +70,14 @@ const FormRol = () => {
 
                 toast.success(message);
 
+                navigate(NAVIGATION.ROL_INDEX);
+
             }
 
         } catch (error) {
 
             const code = getCodeError(error);
-            const message = getMessage(code, {});
+            const message = getMessage(code, { name: formik.values.rol_Nombre });
 
             toast.error(message);
 
@@ -80,6 +87,36 @@ const FormRol = () => {
 
         }
 
+    }
+
+    const update = async (values: TSaveRol, id: number) => {
+        try {
+
+            setLoading(true);
+
+            const response = await rolApi.update(values, id);
+
+            if (response.ok && response.statusCode === 200) {
+
+                const message = getMessage(response.code, {});
+                toast.success(message);
+
+                navigate(NAVIGATION.ROL_INDEX);
+
+            }
+
+        } catch (error) {
+
+            const code = getCodeError(error);
+            const message = getMessage(code, { name: formik.values.rol_Nombre });
+
+            toast.error(message);
+
+        } finally {
+
+            setLoading(false);
+
+        }
     }
 
     const formik = useFormik({
@@ -92,10 +129,15 @@ const FormRol = () => {
                 permissions
             };
 
-            await create(data);
+            if (found?.rol.rol_Id) {
 
-            navigate(NAVIGATION.ROL_INDEX);
+                await update(data, found.rol.rol_Id);
 
+            } else {
+
+                await create(data);
+
+            }
         }
     });
 
@@ -173,6 +215,50 @@ const FormRol = () => {
 
     }
 
+    const getRolById = async () => {
+
+        if (params.id) {
+
+            try {
+
+                setLoadingGetRol(true);
+
+                const response = await rolApi.getRolById(Number(params.id));
+
+                const data = response.data;
+
+                setFound(data);
+
+                if (data) {
+
+                    formik.setValues(data.rol);
+                    setPermissions(data.permissions);
+
+                }
+
+            } catch (error) {
+
+                const code = getCodeError(error);
+                const message = getMessage(code, {});
+
+                toast.error(message);
+
+                navigate(NAVIGATION.ROL_INDEX);
+
+            } finally {
+
+                setLoadingGetRol(false);
+
+            }
+        }
+    }
+
+    useEffect(() => {
+
+        getRolById();
+
+    }, [params.id]);
+
     useKeyBoardEvent({
 
         onEnter: () => {
@@ -223,108 +309,110 @@ const FormRol = () => {
 
         }
 
-    }, [ formik ]);
+    }, [formik]);
 
     return (
-        <div>
+        loadingGetRol ? <Loading center={true} /> :
+            <div>
 
-            <TitlePage
-                title="Crear rol"
-                description="Crear nuevo rol y asigna sus permisos"
-            />
+                <TitlePage
+                    title={`${params.id ? "Editar rol" : "Crear rol"}`}
+                    description={`${params.id ? "Editar" : "Crear nuevo"} rol y asigna sus permisos`}
+                />
 
-            <div className='row mb-2 mt-3'>
+                <div className='row mb-2 mt-3'>
 
-                <div className='col-12 col-md-6 mb-1 mt-1'>
-                    <InputGroup size='sm'>
-                        <InputGroup.Text id='inputGroup-sizing-default'>Nombre</InputGroup.Text>
-                        <Form.Control
-                            aria-describedby='inputGroup-sizing-default'
-                            {...formik.getFieldProps('rol_Nombre')}
-                            placeholder='Nombre de rol'
-                            name='rol_Nombre'
-                            autoFocus
-                            type='tel'
-                            className={clsx(
-                                'form-control',
-                                {
-                                    'is-invalid': formik.touched.rol_Nombre && formik.errors.rol_Nombre,
-                                },
-                                {
-                                    'is-valid': formik.touched.rol_Nombre && !formik.errors.rol_Nombre,
-                                }
-                            )}
-                        />
-                    </InputGroup>
-                    {formik.touched.rol_Nombre && formik.errors.rol_Nombre && (
-                        <ErrorInput textError={formik.errors.rol_Nombre} />
-                    )}
+                    <div className='col-12 col-md-6 mb-1 mt-1'>
+                        <InputGroup size='sm'>
+                            <InputGroup.Text id='inputGroup-sizing-default'>Nombre</InputGroup.Text>
+                            <Form.Control
+                                aria-describedby='inputGroup-sizing-default'
+                                {...formik.getFieldProps('rol_Nombre')}
+                                placeholder='Nombre de rol'
+                                name='rol_Nombre'
+                                autoFocus
+                                type='text'
+                                id="rol_Nombre"
+                                className={clsx(
+                                    'form-control',
+                                    {
+                                        'is-invalid': formik.touched.rol_Nombre && formik.errors.rol_Nombre,
+                                    },
+                                    {
+                                        'is-valid': formik.touched.rol_Nombre && !formik.errors.rol_Nombre,
+                                    }
+                                )}
+                            />
+                        </InputGroup>
+                        {formik.touched.rol_Nombre && formik.errors.rol_Nombre && (
+                            <ErrorInput textError={formik.errors.rol_Nombre} />
+                        )}
+                    </div>
+
+                    <div className='col-12 col-md-6 mb-1 mt-1'>
+                        <InputGroup size='sm'>
+                            <InputGroup.Text id='inputGroup-sizing-default'>Descripción (Opcional)</InputGroup.Text>
+                            <Form.Control
+                                aria-describedby='inputGroup-sizing-default'
+                                {...formik.getFieldProps('rol_Descripcion')}
+                                placeholder='Descripción de rol'
+                                name='rol_Descripcion'
+                                type='text'
+                                id="rol_Descripcion"
+                                className={clsx(
+                                    'form-control',
+                                    {
+                                        'is-invalid': formik.touched.rol_Descripcion && formik.errors.rol_Descripcion,
+                                    },
+                                    {
+                                        'is-valid': formik.touched.rol_Descripcion && !formik.errors.rol_Descripcion,
+                                    }
+                                )}
+                            />
+                        </InputGroup>
+                        {formik.touched.rol_Descripcion && formik.errors.rol_Descripcion && (
+                            <ErrorInput textError={formik.errors.rol_Descripcion} />
+
+                        )}
+                    </div>
+
                 </div>
 
-                <div className='col-12 col-md-6 mb-1 mt-1'>
-                    <InputGroup size='sm'>
-                        <InputGroup.Text id='inputGroup-sizing-default'>Descripción (Opcional)</InputGroup.Text>
-                        <Form.Control
-                            aria-describedby='inputGroup-sizing-default'
-                            {...formik.getFieldProps('rol_Descripcion')}
-                            placeholder='Descripción de rol'
-                            name='rol_Descripcion'
-                            type='text'
-                            className={clsx(
-                                'form-control',
-                                {
-                                    'is-invalid': formik.touched.rol_Descripcion && formik.errors.rol_Descripcion,
-                                },
-                                {
-                                    'is-valid': formik.touched.rol_Descripcion && !formik.errors.rol_Descripcion,
-                                }
-                            )}
-                        />
-                    </InputGroup>
-                    {formik.touched.rol_Descripcion && formik.errors.rol_Descripcion && (
-                        <ErrorInput textError={formik.errors.rol_Descripcion} />
+                <Separator />
 
-                    )}
+                <RolPermission
+                    className="mb-3"
+                    handlerPermission={handlerPermission}
+                    permissions={permissions}
+                />
+
+                <div className='d-flex justify-content-end'>
+                    <button
+                        disabled={loading}
+                        type='reset'
+                        className='btn btn-sm btn-secondary btn-active-light-primary me-2'
+                        onMouseDown={() => {
+
+                            navigate(NAVIGATION.ROL_INDEX);
+
+                        }}
+                    >
+                        Cancelar
+                    </button>
+
+                    <button disabled={loading} onClick={sendForm} type='button' className='btn btn-sm btn-primary'>
+                        {!loading && <span className='indicator-label'>Guardar</span>}
+                        {loading && (
+                            <span className='indicator-progress' style={{ display: 'block' }}>
+                                Cargando...
+                                <span className='spinner-border spinner-border-sm align-middle ms-2'></span>
+                            </span>
+                        )}
+                    </button>
                 </div>
 
             </div>
 
-            <Separator />
-
-            <h6>Permisos</h6>
-
-            <RolPermission
-                className="mb-3"
-                handlerPermission={handlerPermission}
-                permissions={permissions}
-            />
-
-            <div className='d-flex justify-content-end'>
-                <button
-                    disabled={loading}
-                    type='reset'
-                    className='btn btn-sm btn-secondary btn-active-light-primary me-2'
-                    onMouseDown={() => {
-
-                        navigate(NAVIGATION.ROL_INDEX);
-
-                    }}
-                >
-                    Cancelar
-                </button>
-
-                <button disabled={loading} onClick={sendForm} type='button' className='btn btn-sm btn-primary'>
-                    {!loading && <span className='indicator-label'>Guardar</span>}
-                    {loading && (
-                        <span className='indicator-progress' style={{ display: 'block' }}>
-                            Cargando...
-                            <span className='spinner-border spinner-border-sm align-middle ms-2'></span>
-                        </span>
-                    )}
-                </button>
-            </div>
-
-        </div>
     )
 }
 

@@ -2,5 +2,14 @@ export const USER_MESSAGE = {
     USER_EXIST : "Usuario {nameUser} ya existente",
     USER_CREATED : "Usuario {name} creado",
     USER_NOT_FOUND: "Usuario no encontrado",
-    USER_DISABLE: "Usuario {name} actualmente deshabilitado"
+    USER_DISABLE: "Usuario {name} actualmente deshabilitado",
+    USER_DISABLE_SUCCESS: "Usuario {name} deshabilitado",
+    USER_ENABLE_SUCCESS: "Usuario {name} habilitado",
+    USER_NOT_PERMIT_UPDATE: "No se permite la modificación de usuario {name}",
+    USER_ERROR_DISABLE: "USER_ERROR_DISABLE",
+    USER_ERROR_ENABLE: "USER_ERROR_ENABLE",
+    USER_IS_READY_DISABLE: "USER_IS_READY_DISABLE",
+    USER_IS_READY_ENABLE: "USER_IS_READY_ENABLE",
+    USER_UPDATED : "Usuario editado",
+    USER_ERROR_UPDATE : "Error al editar usuario",
 }

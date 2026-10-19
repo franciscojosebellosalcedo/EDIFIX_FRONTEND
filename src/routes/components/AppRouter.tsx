@@ -22,7 +22,7 @@ const AppRouter = () => {
     }
 
     return (
-        <BrowserRouter basename='/edifix/page/'>
+        <BrowserRouter basename='/elerose/page/'>
             <Router />
         </BrowserRouter>
     );

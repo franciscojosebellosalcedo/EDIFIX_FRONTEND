@@ -66,7 +66,9 @@ const Topbar = ({
                     <i className="bi bi-search" />
                     <input
                         aria-label="Buscar"
-                        placeholder="Buscar en EDIFIX..."
+                        id='search'
+                        name='search-elerose'
+                        placeholder="Buscar en ELEROSE..."
                     />
                 </div>
 

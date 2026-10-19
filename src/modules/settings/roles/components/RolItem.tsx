@@ -2,6 +2,9 @@ import type { FC } from "react";
 import StatusRecord from "../../../../shared/components/StatusRecord";
 import { formattDate } from "../../../../shared/utils/common";
 import type { TRol } from "../../types/rol.type";
+import { ROL_CODE } from "../../../../layout/constant";
+import { useNavigate } from "react-router-dom";
+import { NAVIGATION } from "../../../../shared/navigation/navigation.tokens";
 
 type Props = {
     rol: TRol;
@@ -16,6 +19,9 @@ const RolItem: FC<Props> = ({
     actionEditRol,
     actionChangeRol
 }) => {
+
+    const navigate = useNavigate();
+
     return (
         <tr >
             <td style={{ fontSize: ".9rem" }} className=" fw-bold text-dark">
@@ -45,37 +51,49 @@ const RolItem: FC<Props> = ({
                 }
             </td>
 
-            <td className="text-end">
-                {
-                    actionEditRol ?
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-light btn-icon me-2"
-                            title="Editar"
-                        >
-                            <i className="fa-sharp fa-solid fa-pen text-muted"></i>
-                        </button>
-                        : <></>
-                }
+            {
+                rol.rol_Codigo === ROL_CODE.ADMIN ? "" :
+                    <td className="text-end">
+                        {
+                            actionEditRol ?
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-light btn-icon me-2"
+                                    title="Editar"
+                                    onClick={()=>{
 
-                {
-                    actionChangeRol ?
-                        <button
-                            type="button"
-                            onMouseDown={() => changeStatusRol(rol)}
-                            className="btn btn-sm btn-light btn-icon"
-                            title={rol.rol_Activo ? "Desactivar" : "Habilitar"}
-                        >
-                            <i
-                                className={`fas ${rol.rol_Activo
-                                    ? "fa-toggle-off text-muted"
-                                    : "fa-toggle-on text-muted"
-                                    } fs-5`}
-                            ></i>
-                        </button>
-                        : <></>
-                }
-            </td>
+                                        if( rol.rol_Id ){
+
+                                            navigate(NAVIGATION.ROL_UPDATE(rol.rol_Id));
+
+                                        }
+
+                                    }}
+                                >
+                                    <i className="fa-sharp fa-solid fa-pen text-muted"></i>
+                                </button>
+                                : <></>
+                        }
+
+                        {
+                            actionChangeRol ?
+                                <button
+                                    type="button"
+                                    onMouseDown={() => changeStatusRol(rol)}
+                                    className="btn btn-sm btn-light btn-icon"
+                                    title={rol.rol_Activo ? "Desactivar" : "Habilitar"}
+                                >
+                                    <i
+                                        className={`fas ${rol.rol_Activo
+                                            ? "fa-toggle-off text-muted"
+                                            : "fa-toggle-on text-muted"
+                                            } fs-5`}
+                                    ></i>
+                                </button>
+                                : <></>
+                        }
+                    </td>
+            }
         </tr>
     );
 };

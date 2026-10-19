@@ -4,7 +4,7 @@ export type TAuthUser = {
     refressToken: string | null
 }
 
-export type TUser = {
+type TUser = {
     usua_Id: number;
     usua_Nombre: string;
     usua_Codigo: string;

@@ -10,9 +10,21 @@ export type TModule = {
     modulo_Modificacion?: Date
 }
 
+export type TSubmoduleMenu = {
+    submo_Id?: number;
+    submo_Nombre: string;
+    submo_Activo: boolean;
+    submo_Orden: number;
+    submo_ModuloId?: number;
+    submo_Codigo: string;
+    submo_Creacion?: Date;
+    submo_Modificacion?: Date;
+}
+
+
 export type TOptionMenu = {
     opcion_Id?: number,
-    opcion_ModuloId?: number,
+    opcion_SubmoduloId?: number,
     opcion_Nombre: string,
     opcion_Ruta: string,
     opcion_Codigo: string,
@@ -25,6 +37,9 @@ export type TOptionMenu = {
 export type TMenu = {
 
     module: TModule
-    options: TOptionMenu[]
+    submodules: {
+        submodule: TSubmoduleMenu,
+        options: TOptionMenu[]
+    }[]
 
 }

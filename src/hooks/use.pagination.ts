@@ -87,6 +87,7 @@ export const usePagination = <T>(
         totalPages,
         limit,
         totalItems,
+        setRecords,
         total,
         load,
         loading,

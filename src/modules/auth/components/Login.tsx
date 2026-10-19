@@ -35,12 +35,12 @@ const Login = () => {
 
     const dispatch = useAppDispatch();
 
-    const [ messageError , setMessageError ] = useState<string | null>( null );
+    const [messageError, setMessageError] = useState<string | null>(null);
 
     const login = async (values: TLogin) => {
 
-        setMessageError( null );
-        
+        setMessageError(null);
+
         try {
 
             setLoading(true);
@@ -48,6 +48,8 @@ const Login = () => {
             const response = await authApi.login(values);
 
             const data = response.data;
+            console.log(data);
+            
 
             if (response.ok) {
 
@@ -63,10 +65,10 @@ const Login = () => {
 
         } catch (error) {
 
-            const code = getCodeError( error );
-            const message = getMessage( code , {});
-            
-            setMessageError( message );
+            const code = getCodeError(error);
+            const message = getMessage(code, {});
+
+            setMessageError(message);
 
         } finally {
 
@@ -101,27 +103,27 @@ const Login = () => {
                 <div className="card-body p-4 p-md-5">
 
                     <div className="text-center mb-4">
-                        <div className="mb-3">
-                            <i className="bi bi-buildings-fill fs-1 text-primary" />
+                        <div className="sidebar-brand-icon">
+                            <i className="bi bi-gem" aria-hidden="true" />
                         </div>
 
                         <h2 className="fw-bold mb-1">
-                            EDIFIX
+                            ELE ROSE
                         </h2>
 
                         <p className="text-muted mb-0">
-                            Gestión de edificios
+                            Administración comercial
                         </p>
                     </div>
 
                     {
-                        messageError && 
+                        messageError &&
                         <AlertMessage
                             message={messageError}
                             typeAlert="danger"
                         />
                     }
-                    
+
 
                     <form >
 
@@ -201,7 +203,7 @@ const Login = () => {
                         <button
                             onClick={sendForm}
                             type="button"
-                            disabled = { loading }
+                            disabled={loading}
                             className="btn btn-primary w-100"
                         >
                             {

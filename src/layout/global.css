@@ -60,8 +60,8 @@ input {
   z-index: 20;
 }
 .bems-main {
-  margin-left: 258px;
-  width: calc(100% - 258px);
+  margin-left: 150px;
+  width: calc(100% - 150px);
   min-width: 0;
   min-height: 100vh;
   display: flex;
@@ -1116,3 +1116,4 @@ html.theme-light .profile-menu {
 .theme-toggle:hover {
   color: var(--bems-blue);
 }
+

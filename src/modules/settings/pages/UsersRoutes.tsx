@@ -13,6 +13,10 @@ export const UsersRoutes: RouteObject = {
         {
             path: "create",
             element: <FormUser/>
+        },
+        {
+            path: "update/:id",
+            element: <FormUser/>
         }
     ]
 

@@ -9,5 +9,10 @@ export const NAME_OPTION = {
 }
 
 export const NAME_ACTION = {
-    create: "Crear"
+    create: "Crear",
+    update: "Editar",
+}
+
+export const ROL_CODE = {
+    ADMIN: "ADMIN"
 }

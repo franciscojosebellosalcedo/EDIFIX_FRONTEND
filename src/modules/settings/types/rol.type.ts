@@ -29,3 +29,8 @@ export type TSaveRol = {
     rol: TRol;
     permissions: TRolPermission[]
 }
+
+export type TDataRol = {
+    rol: TRol;
+    permissions: TRolPermission[]
+}

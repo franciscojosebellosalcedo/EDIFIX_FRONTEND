@@ -1,6 +1,6 @@
 
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { usePagination } from '../../../../hooks/use.pagination';
@@ -19,6 +19,8 @@ import { getCodeError } from '../../../../shared/errors/handler.error';
 import { getMessage } from '../../../../shared/utils/message.util';
 import { toast } from 'react-toastify';
 import { useKeyBoardEvent } from '../../../../hooks/use.keyboard.event';
+import { useDebounced } from '../../../../hooks/use.debounced';
+import Search from '../../../../shared/components/Search';
 
 const Roles = () => {
 
@@ -34,7 +36,8 @@ const Roles = () => {
         changePage,
         currentPage,
         limit,
-        records
+        records,
+        setRecords
 
     } = usePagination<TRol>({
         initialLimit: 10,
@@ -43,11 +46,15 @@ const Roles = () => {
 
     const navigate = useNavigate();
 
-    const [ loadingChangeStatusRol , setLoadingChangeStatusRol ] = useState( false );
+    const [loadingChangeStatusRol, setLoadingChangeStatusRol] = useState(false);
 
-    const [ openChangeStatus , setOpenChangeStatusRol ]  = useState( false );
+    const [openChangeStatus, setOpenChangeStatusRol] = useState(false);
 
-    const [ rolSelected , setRolSelected ] = useState<TRol | null>( null );
+    const [rolSelected, setRolSelected] = useState<TRol | null>(null);
+
+    const debouncedValue = useDebounced(search);
+
+    const [loadingSearch, setLoadingSearch] = useState(false);
 
     const columns: TTableColumn[] = [
         {
@@ -76,30 +83,34 @@ const Roles = () => {
         }
     ];
 
-    const changeStatusRol = (rol: TRol) =>{
+    const changeStatusRol = (rol: TRol) => {
 
-        setRolSelected( rol );
-        setOpenChangeStatusRol( true );
+        setRolSelected(rol);
+        setOpenChangeStatusRol(true);
 
     }
 
-    const paginate = async () =>{
-        await load( currentPage, limit );
+    const paginate = async () => {
+        await load(currentPage, limit);
     }
 
-    const onConfirmChangeStatusRol = async () =>{
-        
+    const onConfirmChangeStatus = async () => {
+
         try {
 
-            setLoadingChangeStatusRol( true );
+            setLoadingChangeStatusRol(true);
 
-            if( rolSelected?.rol_Id ){
+            if (rolSelected?.rol_Id) {
 
-                const response = await rolApi.changeStatusRolById( rolSelected.rol_Id, Boolean(rolSelected.rol_Activo) );
+                const response = await rolApi.changeStatusRolById(rolSelected.rol_Id, Boolean(rolSelected.rol_Activo));
 
-                if(response.ok ){
+                if (response.ok) {
 
-                    toast.success( response.code );
+                    const message = getMessage(response.code, { name: response.data.rol_Nombre });
+
+                    toast.success(message, {
+                        autoClose: 1000
+                    });
 
                     onClose();
 
@@ -108,41 +119,83 @@ const Roles = () => {
                 }
 
             }
-            
+
         } catch (error) {
 
-            const code = getCodeError( error );
-            const message = getMessage( code , {} );
+            const code = getCodeError(error);
+            const message = getMessage(code, {});
 
-            toast.error( message,{
-                autoClose: 1000 ,
-                toastId: "error-change-status-rol"
-            } );
-            
-        }finally{
+            toast.error(message, {
+                autoClose: 1000,
+                toastId: "error-change-status"
+            });
 
-            setLoadingChangeStatusRol( false );
+        } finally {
+
+            setLoadingChangeStatusRol(false);
 
         }
 
     }
 
-    const onClose = () =>{
-        setOpenChangeStatusRol( false );
+    const onClose = () => {
+        setOpenChangeStatusRol(false);
+    }
+
+    const searchRol = async (value: string) => {
+        try {
+
+            setLoadingSearch(true);
+
+            const response = await rolApi.search(value);
+
+            if (response.ok && response.statusCode === 200) {
+
+                setRecords(response.data);
+
+            }
+
+        } catch (error) {
+
+            const code = getCodeError(error);
+
+            const message = getMessage(code, {});
+
+            toast.error(message);
+
+        } finally {
+
+            setLoadingSearch(false);
+
+        }
     }
 
     useKeyBoardEvent({
-        onEnter: async ()=>{
-            
-            if( openChangeStatus){
+        onEnter: async () => {
 
-                await onConfirmChangeStatusRol();
+            if (openChangeStatus) {
+
+                await onConfirmChangeStatus();
 
             }
 
         },
         withStopPropagation: true
     });
+
+    useEffect(() => {
+
+        if (debouncedValue.trim()) {
+
+            searchRol(debouncedValue);
+
+        } else {
+
+            paginate();
+
+        }
+
+    }, [debouncedValue]);
 
     return (
         <div >
@@ -156,11 +209,11 @@ const Roles = () => {
 
             <ConfirmAction
                 onClose={onClose}
-                onConfirm={onConfirmChangeStatusRol}
+                onConfirm={onConfirmChangeStatus}
                 open={openChangeStatus}
-                loading = { loadingChangeStatusRol }
-                title={`${rolSelected?.rol_Activo ? "Deshabilitar": "Habilitar"} rol`}
-                description={`¿Desea ${rolSelected?.rol_Activo ? "deshabilitar": "habilitar"} rol ${rolSelected?.rol_Nombre}?`}
+                loading={loadingChangeStatusRol}
+                title={`${rolSelected?.rol_Activo ? "Deshabilitar" : "Habilitar"} rol`}
+                description={`¿Desea ${rolSelected?.rol_Activo ? "deshabilitar" : "habilitar"} rol ${rolSelected?.rol_Nombre}?`}
                 actions={
                     <ContainerButton>
 
@@ -169,9 +222,14 @@ const Roles = () => {
                         </Button>
 
                         <Button
-                            onClick={ onConfirmChangeStatusRol }
+                            onClick={onConfirmChangeStatus}
                             className='btn btn-sm btn-primary'>
-                            Confirmar
+                            {
+                                loadingChangeStatusRol ?
+                                    <Loading />
+                                    :
+                                    "Confirmar"
+                            }
                         </Button>
 
                     </ContainerButton>
@@ -202,23 +260,17 @@ const Roles = () => {
                         {/* Search */}
                         <div className="col-12 col-md">
 
-                            <div className="input-group">
+                            <Search
+                                loading = { loadingSearch }
+                                placeholder = "Buscar por nombre"
+                                onSearch={ ()=> {
 
-                                <span className="input-group-text bg-white">
-                                    <i className="bi bi-search text-muted" />
-                                </span>
+                                    searchRol( search );
 
-                                <input
-                                    type="search"
-                                    className="form-control"
-                                    placeholder="Buscar por nombre"
-                                    value={search}
-                                    onChange={(event) =>
-                                        setSearch(event.target.value)
-                                    }
-                                />
-
-                            </div>
+                                }}
+                                setValue={ setSearch }
+                                value={ search }
+                            />
 
                         </div>
 
@@ -256,9 +308,9 @@ const Roles = () => {
                                 {records.map((rol) => (
                                     <RolItem
                                         rol={rol}
-                                        actionChangeRol = { true }
-                                        actionEditRol = { true }
-                                        changeStatusRol = { changeStatusRol }
+                                        actionChangeRol={true}
+                                        actionEditRol={true}
+                                        changeStatusRol={changeStatusRol}
                                         key={rol.rol_Id}
                                     />
                                 ))}
