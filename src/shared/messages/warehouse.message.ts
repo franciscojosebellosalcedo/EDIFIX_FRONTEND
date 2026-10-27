@@ -1,0 +1,15 @@
+export const WAREHOUSE_MESSAGE = {
+    WAREHOUSE_CREATED: "Almacén {name} creado",
+    WAREHOUSE_ERROR_CREATED: "Error al crear almacén",
+    WAREHOUSE_NOT_FOUND: "Almacén no encontrado",
+    WAREHOUSE_FOUND: "Almacén encontrado",
+    WAREHOUSE_UPDATED: "Almacén editado",
+    WAREHOUSE_READY_EXIST: "Almacén {name} ya existente",
+    WAREHOUSE_ERROR_UPDATED: "Error al editar almacén",
+    WAREHOUSE_PAGINATE: "Almacén paginados",
+    WAREHOUSE_ERROR_PAGINATE: "Error al paginar almacenes",
+    WAREHOUSE_READY_DISABLE: "Almacén actualmente deshabilitado",
+    WAREHOUSE_READY_ENABLE: "Almacén actualmente habilitado",
+    WAREHOUSE_DISABLE: "Almacén deshabilitado",
+    WAREHOUSE_ENABLE: "Almacén habilitado",
+}

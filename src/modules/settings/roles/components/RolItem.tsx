@@ -1,10 +1,11 @@
 import type { FC } from "react";
+import { useNavigate } from "react-router-dom";
+import PermissionGuard from "../../../../guards/PermissionGuard";
+import { ROL_CODE } from "../../../../layout/constant";
 import StatusRecord from "../../../../shared/components/StatusRecord";
+import { NAVIGATION } from "../../../../shared/navigation/navigation.tokens";
 import { formattDate } from "../../../../shared/utils/common";
 import type { TRol } from "../../types/rol.type";
-import { ROL_CODE } from "../../../../layout/constant";
-import { useNavigate } from "react-router-dom";
-import { NAVIGATION } from "../../../../shared/navigation/navigation.tokens";
 
 type Props = {
     rol: TRol;
@@ -56,40 +57,50 @@ const RolItem: FC<Props> = ({
                     <td className="text-end">
                         {
                             actionEditRol ?
-                                <button
-                                    type="button"
-                                    className="btn btn-sm btn-light btn-icon me-2"
-                                    title="Editar"
-                                    onClick={()=>{
-
-                                        if( rol.rol_Id ){
-
-                                            navigate(NAVIGATION.ROL_UPDATE(rol.rol_Id));
-
-                                        }
-
-                                    }}
+                                <PermissionGuard
+                                    action="update"
+                                    option="CONFIGURACION_ROLES"
                                 >
-                                    <i className="fa-sharp fa-solid fa-pen text-muted"></i>
-                                </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-light btn-icon me-2"
+                                        title="Editar"
+                                        onClick={() => {
+
+                                            if (rol.rol_Id) {
+
+                                                navigate(NAVIGATION.ROL_UPDATE(rol.rol_Id));
+
+                                            }
+
+                                        }}
+                                    >
+                                        <i className="fa-sharp fa-solid fa-pen text-muted"></i>
+                                    </button>
+                                </PermissionGuard>
                                 : <></>
                         }
 
                         {
                             actionChangeRol ?
-                                <button
-                                    type="button"
-                                    onMouseDown={() => changeStatusRol(rol)}
-                                    className="btn btn-sm btn-light btn-icon"
-                                    title={rol.rol_Activo ? "Desactivar" : "Habilitar"}
+                                <PermissionGuard
+                                    action="changeStatus"
+                                    option="CONFIGURACION_ROLES"
                                 >
-                                    <i
-                                        className={`fas ${rol.rol_Activo
-                                            ? "fa-toggle-off text-muted"
-                                            : "fa-toggle-on text-muted"
-                                            } fs-5`}
-                                    ></i>
-                                </button>
+                                    <button
+                                        type="button"
+                                        onMouseDown={() => changeStatusRol(rol)}
+                                        className="btn btn-sm btn-light btn-icon"
+                                        title={rol.rol_Activo ? "Desactivar" : "Habilitar"}
+                                    >
+                                        <i
+                                            className={`fas ${rol.rol_Activo
+                                                ? "fa-toggle-off text-muted"
+                                                : "fa-toggle-on text-muted"
+                                                } fs-5`}
+                                        ></i>
+                                    </button>
+                                </PermissionGuard>
                                 : <></>
                         }
                     </td>

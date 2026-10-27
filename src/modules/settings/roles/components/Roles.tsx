@@ -3,24 +3,25 @@
 import { useEffect, useState } from 'react';
 import { Button, Table } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import PermissionGuard from '../../../../guards/PermissionGuard';
+import { useDebounced } from '../../../../hooks/use.debounced';
+import { useKeyBoardEvent } from '../../../../hooks/use.keyboard.event';
 import { usePagination } from '../../../../hooks/use.pagination';
+import ConfirmAction from '../../../../shared/components/ConfirmAction';
 import ContainerButton from '../../../../shared/components/ContainerButton';
 import Loading from '../../../../shared/components/Loading';
+import Search from '../../../../shared/components/Search';
 import TableHead from '../../../../shared/components/TableHead';
 import TablePagination from '../../../../shared/components/TablePagination';
 import TitlePage from '../../../../shared/components/TitlePage';
+import { getCodeError } from '../../../../shared/errors/handler.error';
 import { NAVIGATION } from '../../../../shared/navigation/navigation.tokens';
 import type { TTableColumn } from '../../../../shared/types/table.types';
+import { getMessage } from '../../../../shared/utils/message.util';
 import type { TRol } from '../../types/rol.type';
 import { rolApi } from '../api/rol.api';
 import RolItem from './RolItem';
-import ConfirmAction from '../../../../shared/components/ConfirmAction';
-import { getCodeError } from '../../../../shared/errors/handler.error';
-import { getMessage } from '../../../../shared/utils/message.util';
-import { toast } from 'react-toastify';
-import { useKeyBoardEvent } from '../../../../hooks/use.keyboard.event';
-import { useDebounced } from '../../../../hooks/use.debounced';
-import Search from '../../../../shared/components/Search';
 
 const Roles = () => {
 
@@ -198,79 +199,97 @@ const Roles = () => {
     }, [debouncedValue]);
 
     return (
-        <div >
+        <PermissionGuard
+            action="access"
+            option="CONFIGURACION_ROLES"
+            withAlert={true}
+            title="Roles"
+        >
+            <div >
 
-            {/* Header */}
-            <TitlePage
-                className=''
-                title='Roles'
-                description='Administra los roles y permisos del sistema.'
-            />
+                {/* Header */}
+                <TitlePage
+                    className=''
+                    title='Roles'
+                    description='Administra los roles y permisos del sistema.'
+                />
 
-            <ConfirmAction
-                onClose={onClose}
-                onConfirm={onConfirmChangeStatus}
-                open={openChangeStatus}
-                loading={loadingChangeStatusRol}
-                title={`${rolSelected?.rol_Activo ? "Deshabilitar" : "Habilitar"} rol`}
-                description={`¿Desea ${rolSelected?.rol_Activo ? "deshabilitar" : "habilitar"} rol ${rolSelected?.rol_Nombre}?`}
-                actions={
+                <ConfirmAction
+                    onClose={onClose}
+                    onConfirm={onConfirmChangeStatus}
+                    open={openChangeStatus}
+                    loading={loadingChangeStatusRol}
+                    title={`${rolSelected?.rol_Activo ? "Deshabilitar" : "Habilitar"} rol`}
+                    description={`¿Desea ${rolSelected?.rol_Activo ? "deshabilitar" : "habilitar"} rol ${rolSelected?.rol_Nombre}?`}
+                    actions={
+                        <ContainerButton>
+
+                            <Button
+                                onClick={onClose}
+                                disabled={loadingChangeStatusRol}
+                                className='btn btn-sm btn-secondary'
+                            >
+                                Cancelar
+                            </Button>
+
+                            <Button
+                                onClick={onConfirmChangeStatus}
+                                disabled={loadingChangeStatusRol}
+                                className='btn btn-sm btn-primary'>
+                                {
+                                    loadingChangeStatusRol ?
+                                        <Loading />
+                                        :
+                                        "Confirmar"
+                                }
+                            </Button>
+
+                        </ContainerButton>
+                    }
+                />
+
+                {/* Buttons */}
+                <PermissionGuard
+                    action="add"
+                    option='CONFIGURACION_ROLES'
+                >
                     <ContainerButton>
 
-                        <Button onClick={onClose} className='btn btn-sm btn-secondary'>
-                            Cancelar
-                        </Button>
-
                         <Button
-                            onClick={onConfirmChangeStatus}
-                            className='btn btn-sm btn-primary'>
-                            {
-                                loadingChangeStatusRol ?
-                                    <Loading />
-                                    :
-                                    "Confirmar"
-                            }
+                            className="btn btn-sm btn-primary d-flex align-items-center justify-content-center gap-2"
+                            onClick={() => {
+                                navigate(NAVIGATION.ROL_CREATE)
+                            }}
+                        >
+                            <i className="bi bi-plus-lg" />
+                            Nuevo rol
                         </Button>
-
                     </ContainerButton>
-                }
-            />
+                </PermissionGuard>
 
-            {/* Buttons */}
-            <ContainerButton>
+                {/* Toolbar */}
+                <div className="card border-0 shadow-sm mb-4">
 
-                <Button
-                    className="btn btn-sm btn-primary d-flex align-items-center justify-content-center gap-2"
-                    onClick={() => {
-                        navigate(NAVIGATION.ROL_CREATE)
-                    }}
-                >
-                    <i className="bi bi-plus-lg" />
-                    Nuevo rol
-                </Button>
-            </ContainerButton>
+                    <div className="card-body">
 
-            {/* Toolbar */}
-            <div className="card border-0 shadow-sm mb-4">
+                        <div className="row g-2">
 
-                <div className="card-body">
+                            {/* Search */}
+                            <div className="col-12 col-md">
 
-                    <div className="row g-2">
+                                <Search
+                                    loading={loadingSearch}
+                                    placeholder="Buscar por nombre"
+                                    onSearch={() => {
 
-                        {/* Search */}
-                        <div className="col-12 col-md">
+                                        searchRol(search);
 
-                            <Search
-                                loading = { loadingSearch }
-                                placeholder = "Buscar por nombre"
-                                onSearch={ ()=> {
+                                    }}
+                                    setValue={setSearch}
+                                    value={search}
+                                />
 
-                                    searchRol( search );
-
-                                }}
-                                setValue={ setSearch }
-                                value={ search }
-                            />
+                            </div>
 
                         </div>
 
@@ -278,65 +297,65 @@ const Roles = () => {
 
                 </div>
 
+                <TablePagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    total={total}
+                    limit={limit}
+                    totalItems={totalItems}
+                    onPageChange={changePage}
+                    onLimitChange={(size) => {
+
+                        changeLimit(size);
+
+                    }}
+                />
+
+                {
+                    loading ?
+                        <Loading center={true} size='lg' />
+                        :
+                        <>
+                            {/* Table */}
+                            <Table className="table-min-width">
+
+                                <TableHead columns={columns} />
+
+                                <tbody>
+                                    {records.map((rol) => (
+                                        <RolItem
+                                            rol={rol}
+                                            actionChangeRol={true}
+                                            actionEditRol={true}
+                                            changeStatusRol={changeStatusRol}
+                                            key={rol.rol_Id}
+                                        />
+                                    ))}
+                                </tbody>
+
+                            </Table>
+                        </>
+
+                }
+
+                <TablePagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    total={total}
+                    limit={limit}
+                    totalItems={totalItems}
+                    onPageChange={changePage}
+                    onLimitChange={(valueLlimit) => {
+
+                        changeLimit(valueLlimit);
+
+                    }}
+                />
+
             </div>
-
-            <TablePagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                total={total}
-                limit={limit}
-                totalItems={totalItems}
-                onPageChange={changePage}
-                onLimitChange={(size) => {
-
-                    changeLimit(size);
-
-                }}
-            />
-
-            {
-                loading ?
-                    <Loading center={true} size='lg' />
-                    :
-                    <>
-                        {/* Table */}
-                        <Table className="table-min-width">
-
-                            <TableHead columns={columns} />
-
-                            <tbody>
-                                {records.map((rol) => (
-                                    <RolItem
-                                        rol={rol}
-                                        actionChangeRol={true}
-                                        actionEditRol={true}
-                                        changeStatusRol={changeStatusRol}
-                                        key={rol.rol_Id}
-                                    />
-                                ))}
-                            </tbody>
-
-                        </Table>
-                    </>
-
-            }
-
-            <TablePagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                total={total}
-                limit={limit}
-                totalItems={totalItems}
-                onPageChange={changePage}
-                onLimitChange={(valueLlimit) => {
-
-                    changeLimit(valueLlimit);
-
-                }}
-            />
-
-        </div>
+        </PermissionGuard>
     );
+
 };
 
 export default Roles;

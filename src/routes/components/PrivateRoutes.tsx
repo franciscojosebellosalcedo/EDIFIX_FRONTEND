@@ -2,6 +2,8 @@ import { Navigate, type RouteObject } from "react-router-dom";
 import MainLayout from "../../layout/components/MainLayout";
 import { DashboardRoutes } from "../../modules/dashboard/pages/DashboardRoutes";
 import SettingsRoutes from "../../modules/settings/pages/IndexPages";
+import SalesRoutes from "../../modules/sales/pages/IndexPages";
+import InventoriesRoutes from "../../modules/inventories/pages/IndexPage";
 import AuthGuard from "../../guards/AuthGuard";
 
 export const PrivateRoutes: RouteObject = {
@@ -20,7 +22,9 @@ export const PrivateRoutes: RouteObject = {
                     ),
                 },
                 DashboardRoutes,
-                SettingsRoutes
+                SettingsRoutes,
+                SalesRoutes,
+                InventoriesRoutes
             ]
         }
     ]

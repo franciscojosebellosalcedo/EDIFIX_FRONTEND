@@ -4,7 +4,9 @@ import type { TAuthUser } from "../../modules/auth/types/auth.type"
 const initialState: TAuthUser = {
     user: null,
     accessToken: "",
-    refressToken: ""
+    refressToken: "",
+    permissions: [],
+    rol: null
 }
 
 const authSlice = createSlice({
@@ -14,6 +16,8 @@ const authSlice = createSlice({
         setLogin : ( state, action: PayloadAction<TAuthUser>) =>{
             state.user = action.payload.user;
             state.accessToken = action.payload.accessToken;
+            state.permissions = action.payload.permissions;
+            state.rol = action.payload.rol;
             state.refressToken = action.payload.refressToken;
         },
 

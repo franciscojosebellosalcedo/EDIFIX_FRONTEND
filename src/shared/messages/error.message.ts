@@ -3,6 +3,6 @@ export const ERROR_MESSAGE = {
     ERROR_NOT_AUTHORIZED: "No autorizado",
     ERROR_TOKEN_REQUIRED: "Se requiere token de autenticación",
     ERROR_FORM: "Por favor complete el formulario",
-    ERROR_IDENTIFIED_NOT_VALID: "Identificador no válido"
-    
+    ERROR_IDENTIFIED_NOT_VALID: "Identificador no válido",
+    ERROR_NOT_PERMISSION: "No tienes permisos para esta acción"
 }

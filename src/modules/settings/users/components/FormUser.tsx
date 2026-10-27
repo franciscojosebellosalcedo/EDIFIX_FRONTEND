@@ -26,6 +26,7 @@ import { getMessage } from "../../../../shared/utils/message.util";
 import { toast } from "react-toastify";
 import { userApi } from "../api/user.api";
 import Loading from "../../../../shared/components/Loading";
+import PermissionGuard from "../../../../guards/PermissionGuard";
 
 const initialValues: TUser = {
     usua_Nombre: "",
@@ -72,7 +73,7 @@ const FormUser = () => {
 
         usua_Contrasenia: params.id ? Yup.string()
             .optional()
-                : 
+            :
             Yup.string()
                 .trim()
                 .min(8, "Minímo 8 caracteres")
@@ -254,15 +255,15 @@ const FormUser = () => {
         }
     }
 
-    const update = async (id: number , values: TDataUser) => {
+    const update = async (id: number, values: TDataUser) => {
         try {
 
             setLoading(true);
 
-            const response = await userApi.update( id , values);
-            if (response.ok && response.statusCode === 200 ) {
+            const response = await userApi.update(id, values);
+            if (response.ok && response.statusCode === 200) {
 
-                const message = getMessage(response.code, {} );
+                const message = getMessage(response.code, {});
                 toast.success(message);
 
                 navigate(NAVIGATION.USER_INDEX);
@@ -299,9 +300,9 @@ const FormUser = () => {
 
             }
 
-            if( userFound?.user.usua_Id && Number( params.id ) ){
+            if (userFound?.user.usua_Id && Number(params.id)) {
 
-                await update( userFound.user.usua_Id, {
+                await update(userFound.user.usua_Id, {
                     user: values,
                     permissions: permissions
                 });
@@ -342,195 +343,10 @@ const FormUser = () => {
 
         dispatch(setComponent(
 
-            <div className='d-flex justify-content-end'>
-                <button
-                    disabled={loading}
-                    type='reset'
-                    className='btn btn-sm btn-secondary btn-active-light-primary me-2'
-                    onMouseDown={() => {
-
-                        navigate(NAVIGATION.USER_INDEX);
-
-                    }}
-                >
-                    Cancelar
-                </button>
-
-                <button disabled={loading} onClick={sendForm} type='button' className='btn btn-sm btn-primary'>
-                    {!loading && <span className='indicator-label'>Guardar</span>}
-                    {loading && (
-                        <span className='indicator-progress' style={{ display: 'block' }}>
-                            Cargando...
-                            <span className='spinner-border spinner-border-sm align-middle ms-2'></span>
-                        </span>
-                    )}
-                </button>
-            </div>
-
-        ));
-
-        return () => {
-
-            dispatch(setComponent(null));
-
-        }
-
-    }, [formik, userFound, permissions]);
-
-    useEffect(() => {
-
-        if (params.id && !isNaN(Number(params.id))) {
-
-            getUserById(Number(params.id));
-
-        }
-
-    }, [params.id]);
-
-    return (
-        loadingGetUser ? <Loading center={true} /> :
-            <div>
-
-                <TitlePage
-                    title={`${params.id ? "Editar usuario" : "Crear usuario"}`}
-                    description={`${params.id ? "Editar" : "Crear nuevo"} usuario y asigna sus permisos`}
-                />
-
-                <div className='row mb-2 mt-3'>
-
-                    <div className='col-12 col-md-6 mb-1 mt-1'>
-                        <InputGroup size='sm'>
-                            <InputGroup.Text id='inputGroup-sizing-default'>Nombre</InputGroup.Text>
-                            <Form.Control
-                                aria-describedby='inputGroup-sizing-default'
-                                {...formik.getFieldProps('usua_Nombre')}
-                                placeholder='Nombre'
-                                name='usua_Nombre'
-                                autoFocus={!params.id}
-                                type='text'
-                                id="usua_Nombre"
-                                className={clsx(
-                                    'form-control',
-                                    {
-                                        'is-invalid': formik.touched.usua_Nombre && formik.errors.usua_Nombre,
-                                    },
-                                    {
-                                        'is-valid': formik.touched.usua_Nombre && !formik.errors.usua_Nombre,
-                                    }
-                                )}
-                            />
-                        </InputGroup>
-                        {formik.touched.usua_Nombre && formik.errors.usua_Nombre && (
-                            <ErrorInput textError={formik.errors.usua_Nombre} />
-                        )}
-                    </div>
-
-                    <div className='col-12 col-md-6 mb-1 mt-1'>
-                        <InputGroup size='sm'>
-                            <InputGroup.Text id='inputGroup-sizing-default'>Nombre usuario</InputGroup.Text>
-                            <Form.Control
-                                aria-describedby='inputGroup-sizing-default'
-                                {...formik.getFieldProps('usua_NombreUsuario')}
-                                placeholder='Nombre de usuario'
-                                name='usua_NombreUsuario'
-                                type='text'
-                                id="usua_NombreUsuario"
-                                className={clsx(
-                                    'form-control',
-                                    {
-                                        'is-invalid': formik.touched.usua_NombreUsuario && formik.errors.usua_NombreUsuario,
-                                    },
-                                    {
-                                        'is-valid': formik.touched.usua_NombreUsuario && !formik.errors.usua_NombreUsuario,
-                                    }
-                                )}
-                            />
-                        </InputGroup>
-                        {formik.touched.usua_NombreUsuario && formik.errors.usua_NombreUsuario && (
-                            <ErrorInput textError={formik.errors.usua_NombreUsuario} />
-
-                        )}
-                    </div>
-
-                </div>
-
-                <div className='row mb-2 mt-3'>
-
-                    <div className='col-12 col-md-6 mb-1 mt-1'>
-                        <InputGroup size='sm'>
-                            <InputGroup.Text id='inputGroup-sizing-default'>Contraseña</InputGroup.Text>
-                            <Form.Control
-                                {...formik.getFieldProps('usua_Contrasenia')}
-                                placeholder='Contraseña'
-                                name='usua_Contrasenia'
-                                type='password'
-                                id="usua_Contrasenia"
-                                className={clsx(
-                                    'form-control',
-                                    {
-                                        'is-invalid': formik.touched.usua_Contrasenia && formik.errors.usua_Contrasenia,
-                                    },
-                                    {
-                                        'is-valid': formik.touched.usua_Contrasenia && !formik.errors.usua_Contrasenia,
-                                    }
-                                )}
-                            />
-                        </InputGroup>
-                        {formik.touched.usua_Contrasenia && formik.errors.usua_Contrasenia && (
-                            <ErrorInput textError={formik.errors.usua_Contrasenia} />
-                        )}
-                    </div>
-
-                    <div className='col-12 col-md-6 mb-1 mt-1'>
-                        <SelectComponent
-                            title="Rol"
-                            id="usua_RolId"
-                            onChange={async (selected: TOptionSelect) => {
-
-                                if (selected.value) {
-                                    await getRolById(selected.value);
-                                }
-
-                                formik.setFieldValue("usua_RolId", selected.value);
-
-                            }}
-                            defaultValue={formik.values.usua_RolId}
-                            options={[
-                                { label: "Seleccionar", value: 0 },
-                                ...optionsRol
-                            ]}
-                            className={clsx(
-                                'form-control',
-                                {
-                                    'is-invalid': formik.touched.usua_RolId && formik.errors.usua_RolId,
-                                },
-                                {
-                                    'is-valid': formik.touched.usua_RolId && !formik.errors.usua_RolId,
-                                }
-                            )}
-                        />
-                        {formik.touched.usua_RolId && formik.errors.usua_RolId && (
-                            <ErrorInput textError={formik.errors.usua_RolId} />
-                        )}
-                    </div>
-
-                </div>
-
-                {
-                    (rolSelected && rolSelected.rol.rol_Codigo !== ROL_CODE.ADMIN) || permissions.length ?
-                        <>
-                            <Separator />
-
-                            <UserPermission
-                                className="mb-3"
-                                permissions={permissions}
-                                handlerPermission={handlerPermission}
-                            />
-
-                        </>
-                        : ""
-                }
-
+            <PermissionGuard
+                action={params.id ? "update": "add"}
+                option="CONFIGURACION_USUARIOS"
+            >
                 <div className='d-flex justify-content-end'>
                     <button
                         disabled={loading}
@@ -555,8 +371,206 @@ const FormUser = () => {
                         )}
                     </button>
                 </div>
+            </PermissionGuard>
 
-            </div>
+        ));
+
+        return () => {
+
+            dispatch(setComponent(null));
+
+        }
+
+    }, [formik, userFound, permissions]);
+
+    useEffect(() => {
+
+        if (params.id && !isNaN(Number(params.id))) {
+
+            getUserById(Number(params.id));
+
+        }
+
+    }, [params.id]);
+
+    return (
+        <PermissionGuard
+            action={params.id ? "update" : "add"}
+            option="CONFIGURACION_USUARIOS"
+            title="Usuarios"
+            withAlert={true}
+        >
+            {
+                loadingGetUser ? <Loading center={true} /> :
+                    <div>
+
+                        <TitlePage
+                            title={`${params.id ? "Editar usuario" : "Crear usuario"}`}
+                            description={`${params.id ? "Editar" : "Crear nuevo"} usuario y asigna sus permisos`}
+                        />
+
+                        <div className='row mb-2 mt-3'>
+
+                            <div className='col-12 col-md-6 mb-1 mt-1'>
+                                <InputGroup size='sm'>
+                                    <InputGroup.Text id='inputGroup-sizing-default'>Nombre</InputGroup.Text>
+                                    <Form.Control
+                                        aria-describedby='inputGroup-sizing-default'
+                                        {...formik.getFieldProps('usua_Nombre')}
+                                        placeholder='Nombre'
+                                        name='usua_Nombre'
+                                        autoFocus={!params.id}
+                                        type='text'
+                                        id="usua_Nombre"
+                                        className={clsx(
+                                            'form-control',
+                                            {
+                                                'is-invalid': formik.touched.usua_Nombre && formik.errors.usua_Nombre,
+                                            },
+                                            {
+                                                'is-valid': formik.touched.usua_Nombre && !formik.errors.usua_Nombre,
+                                            }
+                                        )}
+                                    />
+                                </InputGroup>
+                                {formik.touched.usua_Nombre && formik.errors.usua_Nombre && (
+                                    <ErrorInput textError={formik.errors.usua_Nombre} />
+                                )}
+                            </div>
+
+                            <div className='col-12 col-md-6 mb-1 mt-1'>
+                                <InputGroup size='sm'>
+                                    <InputGroup.Text id='inputGroup-sizing-default'>Nombre usuario</InputGroup.Text>
+                                    <Form.Control
+                                        aria-describedby='inputGroup-sizing-default'
+                                        {...formik.getFieldProps('usua_NombreUsuario')}
+                                        placeholder='Nombre de usuario'
+                                        name='usua_NombreUsuario'
+                                        type='text'
+                                        id="usua_NombreUsuario"
+                                        className={clsx(
+                                            'form-control',
+                                            {
+                                                'is-invalid': formik.touched.usua_NombreUsuario && formik.errors.usua_NombreUsuario,
+                                            },
+                                            {
+                                                'is-valid': formik.touched.usua_NombreUsuario && !formik.errors.usua_NombreUsuario,
+                                            }
+                                        )}
+                                    />
+                                </InputGroup>
+                                {formik.touched.usua_NombreUsuario && formik.errors.usua_NombreUsuario && (
+                                    <ErrorInput textError={formik.errors.usua_NombreUsuario} />
+
+                                )}
+                            </div>
+
+                        </div>
+
+                        <div className='row mb-2 mt-3'>
+
+                            <div className='col-12 col-md-6 mb-1 mt-1'>
+                                <InputGroup size='sm'>
+                                    <InputGroup.Text id='inputGroup-sizing-default'>Contraseña</InputGroup.Text>
+                                    <Form.Control
+                                        {...formik.getFieldProps('usua_Contrasenia')}
+                                        placeholder='Contraseña'
+                                        name='usua_Contrasenia'
+                                        type='password'
+                                        id="usua_Contrasenia"
+                                        className={clsx(
+                                            'form-control',
+                                            {
+                                                'is-invalid': formik.touched.usua_Contrasenia && formik.errors.usua_Contrasenia,
+                                            },
+                                            {
+                                                'is-valid': formik.touched.usua_Contrasenia && !formik.errors.usua_Contrasenia,
+                                            }
+                                        )}
+                                    />
+                                </InputGroup>
+                                {formik.touched.usua_Contrasenia && formik.errors.usua_Contrasenia && (
+                                    <ErrorInput textError={formik.errors.usua_Contrasenia} />
+                                )}
+                            </div>
+
+                            <div className='col-12 col-md-6 mb-1 mt-1'>
+                                <SelectComponent
+                                    title="Rol"
+                                    id="usua_RolId"
+                                    onChange={async (selected: TOptionSelect) => {
+
+                                        if (selected.value) {
+                                            await getRolById(selected.value);
+                                        }
+
+                                        formik.setFieldValue("usua_RolId", selected.value);
+
+                                    }}
+                                    defaultValue={formik.values.usua_RolId}
+                                    options={[
+                                        { label: "Seleccionar", value: 0 },
+                                        ...optionsRol
+                                    ]}
+                                    className={clsx(
+                                        'form-control',
+                                        {
+                                            'is-invalid': formik.touched.usua_RolId && formik.errors.usua_RolId,
+                                        },
+                                        {
+                                            'is-valid': formik.touched.usua_RolId && !formik.errors.usua_RolId,
+                                        }
+                                    )}
+                                />
+                                {formik.touched.usua_RolId && formik.errors.usua_RolId && (
+                                    <ErrorInput textError={formik.errors.usua_RolId} />
+                                )}
+                            </div>
+
+                        </div>
+
+                        {
+                            rolSelected?.rol.rol_Codigo === ROL_CODE.ADMIN ? "" :
+                                <>
+                                    <Separator />
+
+                                    <UserPermission
+                                        className="mb-3"
+                                        permissions={permissions}
+                                        handlerPermission={handlerPermission}
+                                    />
+
+                                </>
+                        }
+
+                        <div className='d-flex justify-content-end'>
+                            <button
+                                disabled={loading}
+                                type='reset'
+                                className='btn btn-sm btn-secondary btn-active-light-primary me-2'
+                                onMouseDown={() => {
+
+                                    navigate(NAVIGATION.USER_INDEX);
+
+                                }}
+                            >
+                                Cancelar
+                            </button>
+
+                            <button disabled={loading} onClick={sendForm} type='button' className='btn btn-sm btn-primary'>
+                                {!loading && <span className='indicator-label'>Guardar</span>}
+                                {loading && (
+                                    <span className='indicator-progress' style={{ display: 'block' }}>
+                                        Cargando...
+                                        <span className='spinner-border spinner-border-sm align-middle ms-2'></span>
+                                    </span>
+                                )}
+                            </button>
+                        </div>
+
+                    </div>
+            }
+        </PermissionGuard>
     )
 }
 

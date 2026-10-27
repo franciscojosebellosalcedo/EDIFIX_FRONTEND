@@ -1,6 +1,6 @@
 import type { RouteObject } from "react-router-dom";
-import { UsersRoutes } from "./UsersRoutes";
-import { RolesRoutes } from "./RolesRoutes";
+import { UsersRoutes } from "./UsersPages";
+import { RolesRoutes } from "./RolesPages";
 
 const IndexRoutes: RouteObject = {
 

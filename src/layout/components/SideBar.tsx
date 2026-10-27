@@ -1,11 +1,13 @@
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { CSSProperties, MouseEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { setSideMenu } from '../../feactures/layout/layoutSlice';
+import { setOptionsMenu, setSideMenu } from '../../feactures/layout/layoutSlice';
 import { useAppDispatch } from '../../hooks/use.dispatch';
+import { useAppSelector } from '../../hooks/use.selector';
 import { menuApi } from '../api/menu.api';
 import type { TMenu } from '../menu.type';
+import { ROLS_CODE } from '../../shared/rols/rol.code';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -21,32 +23,46 @@ const matchesRoute = (pathname: string, route: string): boolean => {
 };
 
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
+
     const dispatch = useAppDispatch();
+
     const { pathname } = useLocation();
 
     const [menu, setMenu] = useState<TMenu[]>([]);
+
     const [loading, setLoading] = useState(true);
+
     const [activeModuleCode, setActiveModuleCode] = useState<string | null>(null);
+
     const [expandedSubmoduleCode, setExpandedSubmoduleCode] = useState<string | null>(null);
+
     const [flyoutTop, setFlyoutTop] = useState(12);
 
+    const { permissions, rol } = useAppSelector((state) => state.auth);
+
     const visibleMenu = useMemo(() => {
+        if (rol?.rol_Codigo === ROLS_CODE.ADMIN) {
+            return menu;
+        }
+
+        const permittedOptionIds = new Set(
+            permissions.map((permission) => permission.peusua_OpcionId)
+        );
+
         return menu
-            .filter(({ module }) => Boolean(module.modulo_Activo))
-            .sort((a, b) => a.module.modulo_Orden - b.module.modulo_Orden)
             .map(({ module, submodules }) => ({
                 module,
                 submodules: submodules
-                    .filter(({ submodule }) => Boolean(submodule.submo_Activo))
                     .map(({ submodule, options }) => ({
                         submodule,
-                        options: options
-                            .filter(option => Boolean(option.opcion_Activo))
-                            .sort((a, b) => a.opcion_Orden - b.opcion_Orden),
+                        options: options.filter((option) =>
+                            permittedOptionIds.has(option.opcion_Id ?? 0)
+                        ),
                     }))
-                    .sort((a, b) => a.submodule.submo_Orden - b.submodule.submo_Orden),
-            }));
-    }, [menu]);
+                    .filter(({ options }) => options.length > 0),
+            }))
+            .filter(({ submodules }) => submodules.length > 0);
+    }, [menu, permissions, rol]);
 
     const activeRoute = useMemo(() => {
         const routes = visibleMenu.flatMap(({ submodules }) =>
@@ -85,6 +101,10 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
             setMenu(data);
             dispatch(setSideMenu(data));
+
+            const responseOption = await menuApi.getOptions();
+            dispatch( setOptionsMenu( responseOption.data ) );
+
         } catch (error) {
             console.error('Error al cargar el menú:', error);
             setMenu([]);
@@ -332,11 +352,10 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                                             </span>
 
                                             <i
-                                                className={`bi ${
-                                                    isExpanded
+                                                className={`bi ${isExpanded
                                                         ? 'bi-chevron-up'
                                                         : 'bi-chevron-down'
-                                                }`}
+                                                    }`}
                                                 aria-hidden="true"
                                             />
                                         </button>
@@ -355,9 +374,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                                                         <Link
                                                             key={option.opcion_Codigo}
                                                             to={option.opcion_Ruta}
-                                                            className={`flyout-option ${
-                                                                isActive ? 'active' : ''
-                                                            }`}
+                                                            className={`flyout-option ${isActive ? 'active' : ''
+                                                                }`}
                                                             aria-current={
                                                                 isActive ? 'page' : undefined
                                                             }

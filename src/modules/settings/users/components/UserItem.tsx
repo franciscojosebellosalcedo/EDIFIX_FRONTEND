@@ -6,6 +6,7 @@ import { formattDate } from "../../../../shared/utils/common";
 import { rolApi } from "../../roles/api/rol.api";
 import type { TRol } from "../../types/rol.type";
 import type { TUser } from "../../types/user.type";
+import PermissionGuard from "../../../../guards/PermissionGuard";
 
 type Props = {
     user: TUser
@@ -17,36 +18,36 @@ const UserItem: FC<Props> = ({
     user
 }) => {
 
-    const [ rolFound , setRolFound ] = useState<TRol | null>( null );
+    const [rolFound, setRolFound] = useState<TRol | null>(null);
 
     const navigate = useNavigate();
 
-    const getRolById = async () =>{
+    const getRolById = async () => {
 
         try {
-            
-            const response = await rolApi.getOnlyRolById( user.usua_RolId );
+
+            const response = await rolApi.getOnlyRolById(user.usua_RolId);
             const data = response.data;
 
-            if( data ){
+            if (data) {
 
-                setRolFound( data );
+                setRolFound(data);
 
             }
 
         } catch (error) {
 
-            setRolFound( null );
+            setRolFound(null);
 
         }
 
     }
 
-    useEffect(()=>{
+    useEffect(() => {
 
         getRolById();
 
-    },[ user.usua_RolId ]);
+    }, [user.usua_RolId]);
 
     return (
         <tr >
@@ -78,36 +79,46 @@ const UserItem: FC<Props> = ({
             </td>
 
             <td className="text-end">
-                <button
-                    type="button"
-                    className="btn btn-sm btn-light btn-icon me-2"
-                    title="Editar"
-                    onMouseDown={() => {
-
-                        if( user.usua_Id ){
-
-                            navigate( NAVIGATION.USER_UPDATE( user.usua_Id ) );
-
-                        }
-
-                    }}
+                <PermissionGuard
+                    action="update"
+                    option="CONFIGURACION_USUARIOS"
                 >
-                    <i className="fa-sharp fa-solid fa-pen text-muted"></i>
-                </button>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-light btn-icon me-2"
+                        title="Editar"
+                        onMouseDown={() => {
 
-                <button
-                    type="button"
-                    onMouseDown={() => changeStatus(user)}
-                    className="btn btn-sm btn-light btn-icon"
-                    title={user.usua_Activo ? "Desactivar" : "Habilitar"}
+                            if (user.usua_Id) {
+
+                                navigate(NAVIGATION.USER_UPDATE(user.usua_Id));
+
+                            }
+
+                        }}
+                    >
+                        <i className="fa-sharp fa-solid fa-pen text-muted"></i>
+                    </button>
+                </PermissionGuard>
+
+                <PermissionGuard
+                    action="changeStatus"
+                    option="CONFIGURACION_USUARIOS"
                 >
-                    <i
-                        className={`fas ${user.usua_Activo
-                            ? "fa-toggle-off text-muted"
-                            : "fa-toggle-on text-muted"
-                            } fs-5`}
-                    ></i>
-                </button>
+                    <button
+                        type="button"
+                        onMouseDown={() => changeStatus(user)}
+                        className="btn btn-sm btn-light btn-icon"
+                        title={user.usua_Activo ? "Desactivar" : "Habilitar"}
+                    >
+                        <i
+                            className={`fas ${user.usua_Activo
+                                ? "fa-toggle-off text-muted"
+                                : "fa-toggle-on text-muted"
+                                } fs-5`}
+                        ></i>
+                    </button>
+                </PermissionGuard>
             </td>
         </tr >
     )

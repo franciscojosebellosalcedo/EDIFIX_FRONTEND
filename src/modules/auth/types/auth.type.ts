@@ -1,6 +1,11 @@
+import type { TRol } from "../../settings/types/rol.type";
+import type { TUserPermission } from "../../settings/types/user.type";
+
 export type TAuthUser = {
     user: TUser | null,
+    permissions: TUserPermission[]
     accessToken: string | null,
+    rol: TRol | null
     refressToken: string | null
 }
 

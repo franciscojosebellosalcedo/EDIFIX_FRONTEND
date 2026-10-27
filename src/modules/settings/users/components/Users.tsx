@@ -19,6 +19,7 @@ import { getMessage } from "../../../../shared/utils/message.util";
 import ConfirmAction from "../../../../shared/components/ConfirmAction";
 import { useNavigate } from "react-router-dom";
 import { NAVIGATION } from "../../../../shared/navigation/navigation.tokens";
+import PermissionGuard from "../../../../guards/PermissionGuard";
 
 const columns: TTableColumn[] = [
     {
@@ -74,47 +75,47 @@ export const Users = () => {
 
     const navigate = useNavigate();
 
-    const [ openChangeStatus , setOpenChangeStatus ] = useState( false );
+    const [openChangeStatus, setOpenChangeStatus] = useState(false);
 
-    const [ loadingConfirmAction , setLoadingConfirmAction ] = useState( false );
+    const [loadingConfirmAction, setLoadingConfirmAction] = useState(false);
 
-    const [ userSelected , setUserSelected ] = useState<TUser | null>( null );
+    const [userSelected, setUserSelected] = useState<TUser | null>(null);
 
-    const onConfirmChangeStatus = async () =>{
+    const onConfirmChangeStatus = async () => {
 
-        if( userSelected?.usua_Id ){
+        if (userSelected?.usua_Id) {
 
             try {
-    
-                setLoadingConfirmAction( true );
-    
-                const response = await userApi.changeStatus( userSelected.usua_Id , Boolean( userSelected.usua_Activo ) );
-                if(response.ok && response.statusCode === 200){
+
+                setLoadingConfirmAction(true);
+
+                const response = await userApi.changeStatus(userSelected.usua_Id, Boolean(userSelected.usua_Activo));
+                if (response.ok && response.statusCode === 200) {
 
                     const code = response.code;
-                    const message = getMessage( code , {
+                    const message = getMessage(code, {
                         name: response.data.usua_Nombre
-                    } );
+                    });
 
-                    toast.success( message );
+                    toast.success(message);
 
                     await paginate();
 
                     onClose();
 
                 }
-                
+
             } catch (error) {
-    
-                const code = getCodeError( error );
-                const message = getMessage( code , {name: userSelected?.usua_Nombre ?? "" } );
-    
-                toast.error( message );
-                
-            }finally{
-    
-                setLoadingConfirmAction( false );
-    
+
+                const code = getCodeError(error);
+                const message = getMessage(code, { name: userSelected?.usua_Nombre ?? "" });
+
+                toast.error(message);
+
+            } finally {
+
+                setLoadingConfirmAction(false);
+
             }
 
         }
@@ -149,9 +150,9 @@ export const Users = () => {
 
     const changeStatus = (user: TUser) => {
 
-        setUserSelected( user );
+        setUserSelected(user);
 
-        setOpenChangeStatus( true );
+        setOpenChangeStatus(true);
 
     }
 
@@ -159,10 +160,10 @@ export const Users = () => {
         await load(currentPage, limit);
     }
 
-    const onClose = () =>{
+    const onClose = () => {
 
-        setOpenChangeStatus( false );
-        setUserSelected( null );
+        setOpenChangeStatus(false);
+        setUserSelected(null);
 
     }
 
@@ -181,81 +182,94 @@ export const Users = () => {
     }, [debouncedValue]);
 
     return (
-        <div >
+        <PermissionGuard
+            action="access"
+            option="CONFIGURACION_USUARIOS"
+            title="Usuarios"
+            withAlert={true}
+        >
+            <div >
 
-            {/* Header */}
-            <TitlePage
-                className=''
-                title='Usuarios'
-                description='Administra los usuarios y permisos.'
-            />
+                {/* Header */}
+                <TitlePage
+                    className=''
+                    title='Usuarios'
+                    description='Administra los usuarios y permisos.'
+                />
 
-            {/* Buttons */}
-            <ContainerButton>
+                {/* Buttons */}
+                <ContainerButton>
 
-                <Button
-                    className="btn btn-sm btn-primary d-flex align-items-center justify-content-center gap-2"
-                    onClick={() => {
-
-                        navigate( NAVIGATION.USER_CREATE );
-                        
-                    }}
-                >
-                    <i className="bi bi-plus-lg" />
-                    Nuevo usuario
-                </Button>
-            </ContainerButton>
-
-            <ConfirmAction
-                onClose={onClose}
-                onConfirm={onConfirmChangeStatus}
-                open={openChangeStatus}
-                loading={loadingConfirmAction}
-                title={`${userSelected?.usua_Activo ? "Deshabilitar" : "Habilitar"} usuario`}
-                description={`¿Desea ${userSelected?.usua_Activo ? "deshabilitar" : "habilitar"} usuario ${userSelected?.usua_Nombre}?`}
-                actions={
-                    <ContainerButton>
-
-                        <Button onClick={onClose} className='btn btn-sm btn-secondary'>
-                            Cancelar
-                        </Button>
-
+                    <PermissionGuard
+                        action="add"
+                        option="CONFIGURACION_USUARIOS"
+                    >
                         <Button
-                            onClick={onConfirmChangeStatus}
-                            className='btn btn-sm btn-primary'>
-                            {
-                                loadingConfirmAction ?
-                                    <Loading />
-                                    :
-                                    "Confirmar"
-                            }
+                            className="btn btn-sm btn-primary d-flex align-items-center justify-content-center gap-2"
+                            onClick={() => {
+
+                                navigate(NAVIGATION.USER_CREATE);
+
+                            }}
+                        >
+                            <i className="bi bi-plus-lg" />
+                            Nuevo usuario
                         </Button>
+                    </PermissionGuard>
+                </ContainerButton>
 
-                    </ContainerButton>
-                }
-            />
+                <ConfirmAction
+                    onClose={onClose}
+                    onConfirm={onConfirmChangeStatus}
+                    open={openChangeStatus}
+                    loading={loadingConfirmAction}
+                    title={`${userSelected?.usua_Activo ? "Deshabilitar" : "Habilitar"} usuario`}
+                    description={`¿Desea ${userSelected?.usua_Activo ? "deshabilitar" : "habilitar"} usuario ${userSelected?.usua_Nombre}?`}
+                    actions={
+                        <ContainerButton>
 
-            {/* Toolbar */}
-            <div className="card border-0 shadow-sm mb-4">
+                            <Button onClick={onClose} className='btn btn-sm btn-secondary'>
+                                Cancelar
+                            </Button>
 
-                <div className="card-body">
+                            <Button
+                                onClick={onConfirmChangeStatus}
+                                className='btn btn-sm btn-primary'>
+                                {
+                                    loadingConfirmAction ?
+                                        <Loading />
+                                        :
+                                        "Confirmar"
+                                }
+                            </Button>
 
-                    <div className="row g-2">
+                        </ContainerButton>
+                    }
+                />
 
-                        {/* Search */}
-                        <div className="col-12 col-md">
+                {/* Toolbar */}
+                <div className="card border-0 shadow-sm mb-4">
 
-                            <Search
-                                loading={loadingSearch}
-                                placeholder="Buscar por nombre"
-                                onSearch={async () => {
+                    <div className="card-body">
 
-                                    await searchUser(search);
+                        <div className="row g-2">
 
-                                }}
-                                setValue={setSearch}
-                                value={search}
-                            />
+                            {/* Search */}
+                            <div className="col-12 col-md">
+
+                                <Search
+                                    loading={loadingSearch}
+                                    placeholder="Buscar por nombre"
+                                    onSearch={async () => {
+
+                                        await searchUser(search);
+
+                                    }}
+                                    setValue={setSearch}
+                                    value={search}
+                                />
+
+                            </div>
 
                         </div>
 
@@ -263,65 +277,64 @@ export const Users = () => {
 
                 </div>
 
+                <TablePagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    total={total}
+                    limit={limit}
+                    totalItems={totalItems}
+                    onPageChange={changePage}
+                    onLimitChange={(size) => {
+
+                        changeLimit(size);
+
+                    }}
+                />
+
+                {
+                    loading ?
+                        <Loading center={true} size='lg' />
+                        :
+                        <>
+                            {/* Table */}
+                            <Table className="table-min-width">
+
+                                <TableHead columns={columns} />
+
+                                <tbody>
+                                    {
+                                        records.map((user: TUser) => {
+                                            return (
+                                                <UserItem
+                                                    changeStatus={changeStatus}
+                                                    key={user.usua_Id}
+                                                    user={user}
+                                                />
+                                            )
+                                        })
+                                    }
+                                </tbody>
+
+                            </Table>
+                        </>
+
+                }
+
+                <TablePagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    total={total}
+                    limit={limit}
+                    totalItems={totalItems}
+                    onPageChange={changePage}
+                    onLimitChange={(valueLlimit) => {
+
+                        changeLimit(valueLlimit);
+
+                    }}
+                />
+
             </div>
-
-            <TablePagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                total={total}
-                limit={limit}
-                totalItems={totalItems}
-                onPageChange={changePage}
-                onLimitChange={(size) => {
-
-                    changeLimit(size);
-
-                }}
-            />
-
-            {
-                loading ?
-                    <Loading center={true} size='lg' />
-                    :
-                    <>
-                        {/* Table */}
-                        <Table className="table-min-width">
-
-                            <TableHead columns={columns} />
-
-                            <tbody>
-                                {
-                                    records.map((user: TUser) => {
-                                        return (
-                                            <UserItem
-                                                changeStatus={changeStatus}
-                                                key={user.usua_Id}
-                                                user={user}
-                                            />
-                                        )
-                                    })
-                                }
-                            </tbody>
-
-                        </Table>
-                    </>
-
-            }
-
-            <TablePagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                total={total}
-                limit={limit}
-                totalItems={totalItems}
-                onPageChange={changePage}
-                onLimitChange={(valueLlimit) => {
-
-                    changeLimit(valueLlimit);
-
-                }}
-            />
-
-        </div>
+        </PermissionGuard>
     )
 }

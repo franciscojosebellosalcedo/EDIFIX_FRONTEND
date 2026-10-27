@@ -1,0 +1,15 @@
+export const CATEGORY_MESSAGE = {
+    CATEGORY_CREATED: "Categoría {name} creada",
+    CATEGORY_ERROR_CREATED: "Error al crear la categoría",
+    CATEGORY_NOT_FOUND: "Categoría no encontrada",
+    CATEGORY_FOUND: "Categoría encontrada",
+    CATEGORY_UPDATED: "Categoría editada",
+    CATEGORY_READY_EXIST: "Categoría {name} ya existente",
+    CATEGORY_ERROR_UPDATED: "Error al editar la cantegoría",
+    CATEGORY_PAGINATE: "Categorías paginadas",
+    CATEGORY_ERROR_PAGINATE: "Error al paginar categorías",
+    CATEGORY_READY_DISABLE: "Categoría actualmente deshabilitada",
+    CATEGORY_READY_ENABLE: "Categoría actualmente habilitada",
+    CATEGORY_DISABLE: "Categoría deshabilitada",
+    CATEGORY_ENABLE: "Categoría habilitada",
+}
